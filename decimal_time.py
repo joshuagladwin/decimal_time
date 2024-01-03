@@ -1,26 +1,36 @@
-from datetime import datetime, date
+from datetime import datetime
 from tkinter import *
 
+debug = False
 
-def decimal_time():
-    current_datetime = datetime.now()
-    year_len = (date(current_datetime.year, 12, 31) - date(current_datetime.year - 1, 12, 31)).days
+
+def decimal_time(debug=False):
+    if debug:
+        current_datetime = datetime.strptime("2023-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+    else:
+        current_datetime = datetime.now()
+
+    year_len = datetime(year=current_datetime.year, month=12, day=31).timetuple().tm_yday
 
     dt = ((current_datetime.hour * 3600) + (current_datetime.minute * 60) + current_datetime.second +
           (current_datetime.microsecond / 1e6)) / 86400
 
-    dt_hours = str(dt)[2]
-    dt_minutes = str(dt)[3:5]
-    dt_seconds = str(dt)[5:7]
+    dt_str = f"{dt:.5f}"
+
+    dt_hours = dt_str[2]
+    dt_minutes = dt_str[3:5].zfill(2)
+    dt_seconds = dt_str[5:7].zfill(2)
 
     dd_year = current_datetime.strftime("%y")
-    dd_day = (current_datetime.date() - date(current_datetime.year - 1, 12, 31)).days
-    dd_month = str((dd_day + dt) / year_len)[2:5]
+    dd_day = current_datetime.timetuple().tm_yday - 1
+    dd_month = f"{(dd_day + dt) / year_len}"[2:5].zfill(3)
 
-    ddt_string = f"{dd_year}{dd_month}.{dt_hours}{dt_minutes.zfill(2)}{dt_seconds.zfill(2)}"
+    ddt_string = f"{dd_year}{dd_month}.{dt_hours}{dt_minutes}{dt_seconds}"
 
     lbl.config(text=ddt_string)
-    lbl.after(100, decimal_time)
+
+    if not debug:
+        lbl.after(100, decimal_time)
 
 
 root = Tk()
@@ -43,6 +53,6 @@ lbl = Label(root,
 
 lbl.pack(anchor='center')
 
-decimal_time()
+decimal_time(debug)
 
 root.mainloop()
